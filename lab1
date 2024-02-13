@@ -1,0 +1,89 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <filesystem>
+#include <map>
+#include <algorithm>
+
+#define FILE_NAME "src.txt"
+
+enum class Type {
+	Encrypt,
+	Decrypt
+};
+
+void firstTask()
+{
+	std::cout << "Size: " << std::filesystem::file_size("src.doc");
+}
+
+void secondTask()
+{
+	std::ifstream file("src.doc", std::ios::binary);
+	std::string str;
+	std::getline(file, str);
+
+	std::map<unsigned char, float> freq;
+
+	for (int i = 0; i < str.size(); i++)
+		freq[str[i]] += 1;
+
+	for (auto& var : freq) {
+		var.second /= sizeof(str);
+		std::cout << "'" << var.first << "' - " << var.second << std::endl;
+	}
+}
+
+int findPos(std::string& str, char ch)
+{
+	for (int i = 0; i < str.size(); i++)
+		if (str[i] == ch)
+			return i;
+}
+
+void thirdTask(Type type)
+{
+	std::ifstream encryptFile(FILE_NAME, std::ios::binary);
+	std::ifstream keyFile("key.txt", std::ios::binary);
+
+	std::string str;
+	std::string key;
+
+	std::getline(encryptFile, str);
+	std::getline(keyFile, key);
+
+	std::cout << str << std::endl;
+
+	switch (type) {
+	case Type::Decrypt:
+		for (int i = 0; i < str.size(); i++)
+			str[i] = char(findPos(key, str[i]));
+		break;
+	case Type::Encrypt:
+		for (int i = 0; i < str.size(); i++) {
+			//std::cout << int(unsigned char(str[i])) << "---" << str[i] << std::endl;
+			str[i] = key[int(unsigned char(str[i]))];
+		}
+		break;
+	}
+
+	std::ofstream file(FILE_NAME, std::ios::binary);
+	file << str;
+
+	std::cout << str << std::endl;
+
+}
+
+int main()
+{
+	//firstTask();
+	//secondTask();
+	thirdTask(Type::Encrypt);
+
+	//std::ofstream file("key.txt", std::ios::app);
+
+	//for (int i = 256; i >= 0; i--)
+	//	file << unsigned char(i);
+
+	return 0;
+}
