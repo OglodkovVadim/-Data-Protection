@@ -3,9 +3,10 @@
 #include <string>
 #include <filesystem>
 #include <map>
+#include <vector>
 #include <algorithm>
 
-#define FILE_NAME "src.txt"
+#define FILE_NAME "src.doc"
 
 enum class Type {
 	Encrypt,
@@ -14,7 +15,7 @@ enum class Type {
 
 void firstTask()
 {
-	std::cout << "Size: " << std::filesystem::file_size("src.doc");
+	//std::cout << "Size: " << std::filesystem::file_size("src.doc");
 }
 
 void secondTask()
@@ -47,22 +48,26 @@ void thirdTask(Type type)
 	std::ifstream keyFile("key.txt", std::ios::binary);
 
 	std::string str;
-	std::string key;
+	std::string buf;
 
-	std::getline(encryptFile, str);
-	std::getline(keyFile, key);
+	std::vector<int> key;
 
-	std::cout << str << std::endl;
+	while (std::getline(keyFile, buf)) { key.push_back(stoi(buf)); }
 
+	char ch = 0;
 	switch (type) {
 	case Type::Decrypt:
-		for (int i = 0; i < str.size(); i++)
-			str[i] = char(findPos(key, str[i]));
+		while (encryptFile.get(ch)) {
+			unsigned char val = unsigned char(ch);
+			unsigned char buf_ch = char(std::distance(key.begin(), std::find(key.begin(), key.end(), int(val))));
+			str += buf_ch;
+		}
 		break;
 	case Type::Encrypt:
-		for (int i = 0; i < str.size(); i++) {
-			//std::cout << int(unsigned char(str[i])) << "---" << str[i] << std::endl;
-			str[i] = key[int(unsigned char(str[i]))];
+		while (encryptFile.get(ch)) {
+			unsigned char val = unsigned char(ch);
+			unsigned char buf_ch = unsigned char(key[int(val)]);
+			str += buf_ch;
 		}
 		break;
 	}
@@ -70,20 +75,36 @@ void thirdTask(Type type)
 	std::ofstream file(FILE_NAME, std::ios::binary);
 	file << str;
 
-	std::cout << str << std::endl;
+	//std::cout << str << std::endl;
 
 }
+
+
 
 int main()
 {
 	//firstTask();
 	//secondTask();
-	thirdTask(Type::Encrypt);
 
-	//std::ofstream file("key.txt", std::ios::app);
+	thirdTask(Type::Decrypt);
+
+	
+
+
+
+
+
+	//std::ofstream file("key.txt", std::ios::app|std::ios::binary);
 
 	//for (int i = 256; i >= 0; i--)
-	//	file << unsigned char(i);
+		//file << i << std::endl;
+
+	//std::ifstream encryptFile(FILE_NAME, std::ios::binary);
+
+	//char ch = 0;
+	//while (encryptFile.get(ch)) {
+	//	std::cout << static_cast<int>(static_cast<unsigned char>(ch)) << std::endl;
+	//}
 
 	return 0;
 }
