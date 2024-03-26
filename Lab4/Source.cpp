@@ -308,8 +308,8 @@ ValuesFestel encrypt(unsigned long left, unsigned long right)
     }
 
     std::swap(values_festel.left, values_festel.right);
-    values_festel.left ^= blow_fish.P[16];
-    values_festel.right ^= blow_fish.P[17];
+    values_festel.left ^= blow_fish.P[17];
+    values_festel.right ^= blow_fish.P[16];
 
     return values_festel;
 }
@@ -333,6 +333,7 @@ ValuesFestel decrypt(unsigned long left, unsigned long right)
     return values_festel;
 }
 
+
 unsigned long get32(const std::string& str)
 {
     unsigned long value = 0;
@@ -342,8 +343,8 @@ unsigned long get32(const std::string& str)
     unsigned long v3 = str[2];
     unsigned long v4 = str[3];
 
-    value |= (v1         & 0b00000000000000000000000011111111);
-    value |= ((v2 << 8)  & 0b00000000000000001111111100000000);
+    value |= (v1 & 0b00000000000000000000000011111111);
+    value |= ((v2 << 8) & 0b00000000000000001111111100000000);
     value |= ((v3 << 16) & 0b00000000111111110000000000000000);
     value |= ((v4 << 24) & 0b11111111000000000000000000000000);
 
@@ -353,13 +354,13 @@ unsigned long get32(const std::string& str)
 std::string getStr(unsigned long value)
 {
     std::string str;
-    str += unsigned char(value  & 0b00000000000000000000000011111111);
+    str += unsigned char(value & 0b00000000000000000000000011111111);
     str += unsigned char((value & 0b00000000000000001111111100000000) >> 8);
     str += unsigned char((value & 0b00000000111111110000000000000000) >> 16);
     str += unsigned char((value & 0b11111111000000000000000000000000) >> 24);
 
     unsigned char arr[4];
-    arr[0] = unsigned char(value  & 0b00000000000000000000000011111111);
+    arr[0] = unsigned char(value & 0b00000000000000000000000011111111);
     arr[1] = unsigned char((value & 0b00000000000000001111111100000000) >> 8);
     arr[2] = unsigned char((value & 0b00000000111111110000000000000000) >> 16);
     arr[3] = unsigned char((value & 0b11111111000000000000000000000000) >> 24);
@@ -375,7 +376,7 @@ void extended_open_key(std::string& open_key)
 
     open_key = open_key.substr(0, 72);
 
-    for (int i = 0; i < open_key.length(); i+=4) {
+    for (int i = 0; i < open_key.length(); i += 4) {
         unsigned long value = get32(open_key.substr(i, 4));
         blow_fish.K.push_back(value);
     }
@@ -410,54 +411,43 @@ void extended_close_key()
 
 int main()
 {
-    //std::string open_key = "vadim";
-    //std::string message = "hellohello";
+    std::string open_key = "vadim";
+    std::string message = "hellohello";
 
-    ////std::cin >> open_key;
-    ////std::cin >> message;
+    std::cin >> open_key;
+    std::cin >> message;
 
-    //extended_open_key(open_key);
+    extended_open_key(open_key);
 
-    //int added_byts = (8 - message.length() % 8);
-    //for (int i = 0; i < added_byts; i++)
-    //    message += '0';
+    int added_byts = (8 - message.length() % 8);
+    for (int i = 0; i < added_byts; i++)
+        message += '0';
 
-    //std::vector<std::string> message_arr;
-    //for (int i = 0; i < message.length(); i += 8) {
-    //    message_arr.push_back(message.substr(i, 8));
-    //}
+    std::vector<std::string> message_arr;
+    for (int i = 0; i < message.length(); i += 8) {
+        message_arr.push_back(message.substr(i, 8));
+    }
 
-    //std::vector<std::pair<unsigned long, unsigned long>> encrypted_message;
-    //for (int i = 0; i < message_arr.size(); i++) {
-    //    auto left = message_arr[i].substr(0, 4);
-    //    auto right = message_arr[i].substr(4, 4);
-    //    
-    //    auto g1 = get32(left);
-    //    auto g2 = get32(right);
+    std::vector<std::pair<unsigned long, unsigned long>> encrypted_message;
+    for (int i = 0; i < message_arr.size(); i++) {
+        auto left = message_arr[i].substr(0, 4);
+        auto right = message_arr[i].substr(4, 4);
+        
+        auto g1 = get32(left);
+        auto g2 = get32(right);
 
-    //    // 1: g1 = 1819043176 g2 = 1818585199
-    //    // 2: g1 = 808480620 g2 = 808464432
-    //    auto buf = encrypt(get32(left), get32(right));
-    //    // 1: left = 3792854486 right = 2114533008
-    //    // 2: left = 2400669110 right = 894087226
-    //    encrypted_message.push_back({ buf.left, buf.right });
-    //}
+        auto buf = encrypt(get32(left), get32(right));
+        encrypted_message.push_back({ buf.left, buf.right });
+    }
 
-    //std::vector<std::pair<std::string, std::string>> decrypted_message;
-    //for (int i = 0; i < encrypted_message.size(); i++) {
-    //    auto left = encrypted_message[i].first;
-    //    auto right = encrypted_message[i].second;
+    std::vector<std::pair<std::string, std::string>> decrypted_message;
+    for (int i = 0; i < encrypted_message.size(); i++) {
+        auto left = encrypted_message[i].first;
+        auto right = encrypted_message[i].second;
 
-    //    auto buf = decrypt(left, right);
+        auto buf = decrypt(left, right);
+        decrypted_message.push_back({ getStr(buf.left), getStr(buf.right)});
+    }
 
-    //    auto g1 = getStr(buf.left);
-    //    auto g2 = getStr(buf.right);
-
-    //    decrypted_message.push_back({ getStr(buf.left), getStr(buf.right)});
-    //}
-
-    auto buf = encrypt(10000, 20000);
-    auto buf2 = decrypt(buf.left, buf.right);
-
-	return 0;
+    return 0;
 }
